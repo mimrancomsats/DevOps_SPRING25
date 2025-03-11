@@ -1,0 +1,93 @@
+Docker Installation
+-----------------------------------------------------
+1. sudo bash
+2. docker -v (Docker Version)
+3. apt update
+4. apt install docker.io
+5. docker -v (Docker Version)
+6. docker images (shows all images from your local repository)
+7. docker ps (shows all running containers)
+8. docker ps -a (shows all containers - running and stopped)
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Running ngnix Docker image from Docker Hub. 
+-----------------------------------------------------
+
+1. docker pull nginx
+2. docker images
+3. docker run nginx (It will take us inside the container).
+4. docker run --name nginx_c -d nginx (Run container in detached mode).
+
+But still we cannot access it from the browser. To access, map container port to the host computer port.
+5. docker stop nginx_c
+6. docker container rm nginx_c
+7. docker run --name nginx_c -p 80:80 -d nginx (Server now accessible from browser.).
+8. docker stop nginx_c
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Python - Docker Build Image, Run it and Push it to Docker Hub.
+------------------------------------------------------
+
+1. Create a file test.py and paste following code inside it.
+
+print("Hello World")
+
+2. Create dockerfile and paste following code inside it to create an image.
+
+FROM ubuntu:latest
+
+RUN apt-get update
+RUN apt-get install -y python3
+
+COPY test.py .
+
+CMD python3 test.py
+
+3. docker build -t imrantaurus2003/pythonapp .
+4. docker images
+5. docker run --name pythonapp_c  imrantaurus2003/pythonapp
+6. docker push imrantaurus2003/pythonapp
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+PhP - Docker Build Image, Run it and Push it to Docker Hub.
+------------------------------------------------------
+
+1. Create a file index.php and paste following code inside it.
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sample PHP Page</title>
+</head>
+<body>
+    <h1>Hello, World!</h1>
+    
+    <?php
+    // PHP code starts here
+    $name = "John";
+    $age = 30;
+    ?>
+    
+    <p>Welcome, <?php echo $name; ?>!</p>
+    <p>You are <?php echo $age; ?> years old.</p>
+</body>
+</html>
+
+2. Create dockerfile and paste following code inside it to create an image.
+
+FROM php:7.4-apache
+
+WORKDIR /var/www/html
+
+COPY index.php .
+
+3. docker build -t imrantaurus2003/phpapp .
+4. docker images
+5. docker run --name phpapp_c -p 8080:80 -d imrantaurus2003/phpapp
+6. docker push imrantaurus2003/phpapp
+
+-----------------------------------------------------
+TO BUILD DOCKER IMAGE WITH CUSTOM DOCKERFILE NAME:
+1. docker build -f df -t phpapp-8.3 .
