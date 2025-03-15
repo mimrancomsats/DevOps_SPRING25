@@ -1,3 +1,4 @@
++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Docker Installation
 -----------------------------------------------------
 1. sudo bash
@@ -88,6 +89,8 @@ COPY index.php .
 5. docker run --name phpapp_c -p 8080:80 -d imrantaurus2003/phpapp
 6. docker push imrantaurus2003/phpapp
 
------------------------------------------------------
++++++++++++++++++++++++++++++++++++++++++++++++++++++
 TO BUILD DOCKER IMAGE WITH CUSTOM DOCKERFILE NAME:
+-----------------------------------------------------
+
 1. docker build -f df -t phpapp-8.3 .
