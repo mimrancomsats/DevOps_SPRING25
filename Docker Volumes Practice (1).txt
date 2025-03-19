@@ -1,0 +1,87 @@
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Getting inside the Running COntainer
+-----------------------------------------------------
+
+1. sudo bash
+2. docker run -d --name httpd_c httpd
+3. docker exec -it httpd_c bash (Gets you inside the running container)
+4. ls (shows all files and folders of the httpd Web server)
+5. cd ..
+6. cd ..
+7. cd ..
+8. ls (shows you the list of files in Linux OS)
+9. exit
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Creating anonymous volume in Docker Containers
+-----------------------------------------------------
+
+1. docker run -d --name httpd_c1 -v /containervol httpd
+2. docker exec -it httpd_c1 bash (Gets you inside the running container)
+3. ls (shows all files and folders of the httpd Web server)
+4. cd ..
+5. cd ..
+6. cd ..
+7. ls (shows you the list of files in Linux OS)
+8. cd containervol
+9. ls
+10. touch file1 file2 file3
+11. ls
+
+In another EC2 window get inside the docker area
+12. cd /var/lib/docker 
+13. ls
+14. cd volumes
+15. ls
+16. cd 4a4824062e1d285f0b51c54e3a62bcc8a527f21335fc35ab588fe0f241e48de6
+17. ls
+18. cd _data
+19. ls (You will see the files file1, file2 and file3 in the anonymous volume here.)
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Creating named volume in Docker Containers
+-----------------------------------------------------
+
+1. docker run -d --name httpd_c2 -v hostvol:/containervol httpd
+2. docker exec -it httpd_c2 bash (Gets you inside the running container)
+3. ls (shows all files and folders of the httpd Web server)
+4. cd ..
+5. cd ..
+6. cd ..
+7. ls (shows you the list of files in Linux OS)
+8. cd containervol
+9. ls
+10. touch file1 file2 file3
+11. ls
+
+In another EC2 window get inside the docker area
+12. cd /var/lib/docker 
+13. ls
+14. cd volumes
+15. ls
+16. cd hostvol
+17. ls
+18. cd _data
+19. ls (You will see the files file1, file2 and file3 in the anonymous volume here.)
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Creating bindmount in Docker Containers
+-----------------------------------------------------
+
+1. mkdir bindmount
+2. docker run -d --name httpd_c3 -v /home/ubuntu/bindmountvolume:/containervol httpd
+3. docker exec -it httpd_c3 bash (Gets you inside the running container)
+4. ls (shows all files and folders of the httpd Web server)
+5. cd ..
+6. cd ..
+7. cd ..
+8. ls (shows you the list of files in Linux OS)
+9. cd containervol
+10. ls
+11. touch file1 file2 file3
+12. ls
+
+In another EC2 window get inside the bindmountvolume folder
+13. cd /home/ubuntu/bindmountvolume 
+14. ls (You will see the files file1, file2 and file3 in the anonymous volume here.)
