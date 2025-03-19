@@ -1,0 +1,171 @@
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Dokcer-compose Installation
+-----------------------------------------------------
+
+1. sudo bash
+2. apt install docker-compose
+3. docker-compose -v
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Running Wordpress application using docker-compose
+-----------------------------------------------------
+
+1. mkdir wordpress
+2. cd wordpress
+3. nano docker-compose.yml
+4. Paste following content in the file created in Step 3.
+
+version: '3.1'
+
+services:
+
+  wordpress:
+    image: wordpress
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: exampleuser
+      WORDPRESS_DB_PASSWORD: examplepass
+      WORDPRESS_DB_NAME: exampledb
+    volumes:
+      - wordpress:/var/www/html
+
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: exampledb
+      MYSQL_USER: exampleuser
+      MYSQL_PASSWORD: examplepass
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    volumes:
+      - db:/var/lib/mysql
+
+volumes:
+  wordpress:
+  db:
+
+5. Run the following command to spin up the containers for individual services in detached mode.
+6. docker-compose up -d
+7. docker-compose images
+8. docker-compose ps
+9. Use EC2 public IP with 8080 port to access the application
+10.Stop all the containers using the following command.
+9. docker-compose down
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Running Odoo application in Docker Containers
+-----------------------------------------------------
+1. mkdir odoo
+2. cd odoo
+3. nano docker-compose.yml
+4. Paste following content in the file created in Step 3.
+
+version: '3.1'
+services:
+  web:
+    image: odoo:16.0
+    depends_on:
+      - mydb
+    ports:
+      - "8069:8069"
+    environment:
+    - HOST=mydb
+    - USER=odoo
+    - PASSWORD=myodoo
+  mydb:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=myodoo
+      - POSTGRES_USER=odoo
+
+5. docker-compose up -d
+6. docker-compose images
+7. docker-compose ps
+8. Use EC2 public IP with 8069 port to access the application
+9. docker-compose down
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Creating an Image within Docker Compose file
+-----------------------------------------------------
+1. mkdir phpapp
+2. cd phpapp
+3. Create a file index.php and paste following code inside it.
+
+<?php
+
+// Get environment variables
+$dbHost = getenv('HOST'); // Service name as defined in docker-compose.yml
+$dbName = getenv('DATABASE');
+$dbUser = getenv('USER');
+$dbPassword = getenv('PASSWORD');
+
+
+// Create connection
+$connect = mysqli_connect($dbHost, $dbUser, $dbPassword, $dbName);
+
+$table_name = "php_docker_table";
+
+$query = "SELECT * FROM $table_name";
+
+$response = mysqli_query($connect, $query);
+
+echo "<strong>$table_name: </strong>";
+while($i = mysqli_fetch_assoc($response))
+{
+    echo "<p>".$i['title']."</p>";
+    echo "<p>".$i['body']."</p>";
+    echo "<p>".$i['date_created']."</p>";
+    echo "<hr>";
+}
+
+
+4. Create dockerfile and paste following code inside it to create an image.
+
+FROM php:apache
+
+RUN apt-get update
+RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
+WORKDIR /var/www/html
+
+COPY index.php .
+
+5. Create docker-compose.yml file and paste following code inside it to create an image.
+
+version: '3'
+services:
+  db: 
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: php_docker
+      MYSQL_USER: php_docker
+      MYSQL_PASSWORD: password 
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    volumes:
+      - "./db:/docker-entrypoint-initdb.d"
+      - "mysql:/var/lib/mysql" 
+  www:
+    build: .
+    ports:
+      - 80:80
+      - 81:80
+    environment:  
+      HOST: db
+      USER: php_docker
+      PASSWORD: password
+      DATABASE: php_docker 
+  phpmyadmin:
+    image: phpmyadmin
+    ports:
+      - 8001:80
+    environment:
+      - PMA_HOST=db
+      - PMA_PORT=3306
+volumes:
+  mysql:
+
+6. docker-compose up -d
+7. Use EC2 public IP with 80 port to access the application
