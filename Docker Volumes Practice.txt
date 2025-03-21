@@ -63,7 +63,7 @@ In another EC2 window get inside the docker area
 16. cd hostvol
 17. ls
 18. cd _data
-19. ls (You will see the files file1, file2 and file3 in the anonymous volume here.)
+19. ls (You will see the files file1, file2 and file3 in the named volume here.)
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++
 Creating bindmount in Docker Containers
@@ -84,4 +84,4 @@ Creating bindmount in Docker Containers
 
 In another EC2 window get inside the bindmountvolume folder
 13. cd /home/ubuntu/bindmountvolume 
-14. ls (You will see the files file1, file2 and file3 in the anonymous volume here.)
+14. ls (You will see the files file1, file2 and file3 in the bindmountvolume here.)
