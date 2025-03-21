@@ -1,6 +1,6 @@
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++
-Getting inside the Running COntainer
+Getting inside the Running Container
 -----------------------------------------------------
 
 1. sudo bash
