@@ -1,0 +1,46 @@
+Pull the Remote Repo from Git, create Branch and Push To Remote Repo
+-------------------------------------------------------------------
+1. Create a folder in /home/ubuntu using following command
+ mkdir project
+
+2. Get inside the folder and type following command
+ git init
+
+3. Settings of username and email
+ git config --global user.name "Imran"
+ git config --global user.name "imran@gmail.com"
+
+4. Add Remote Repository
+ git remote add git8ab https://github.com/mimrancomsats/git8ab.git
+ git remote -v
+
+4. Pull Remote Repository
+ git pull git8ab main
+ git log --oneline
+
+5. Create new feature Branch
+ git branch featurebranch
+ git checkout featurebranch
+ git branch
+
+ touch newfeature.py
+ git add newfeature.py
+ git commit -m "newfeature commit"
+ git log --oneline
+
+6. Push featurebranch to the git8ab remote repository in GitHub
+ git push git8ab featurebranch
+
+7. Create Pull Request
+ Go to GitHub Repository
+ Click on Pull requests
+ Click on Compare & pull request.
+ Select featurebranch in Compare and Review Section
+ Click on Create Pull Request Button
+ Click on Merge Pull Request Button
+ Click on Confirm Merge Option
+ Click on Delete branch to delete featurebranch
+ Redirect to the repository.
+ You can view featurebranch.py file merged there.
+
+
