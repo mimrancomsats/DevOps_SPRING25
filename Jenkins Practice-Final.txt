@@ -1,0 +1,126 @@
+
+Accessing Jenkins
+-----------------------------------------------------
+Get the public IP address of the EC2 machine and access the Jenkins using the following URL
+1. http://<your_server_public_DNS>:8080 
+2. Enter username and password which you have set while installing Jenkins.
+3. Jenkins Dashboard will be available.
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Creating CI/CD Pipeline using Freestyle Project Approach
+======================================================================================
+
+Fork Jenkins Repository
+-----------------------------------------------------
+1. In the GitHub, fork the following repository https://github.com/mimrancomsats/jenkins-freestylepipeline.git
+
+
+Integrating Jenkins with Github using Webhook Approach
+------------------------------------------------------
+1. Go the Settings section of your forked repository.
+2. Click on Webhooks option in the left panel.
+3. Click on Add Webhook button in top right corner.
+4. In the Payload URL section, enter following URL http://<your_server_public_IPAddress:8080>/github-webhook/ 
+5. In the Content Type drop down list, select application/json option
+6. Click on Add Webhook button.
+
+
+Creating first Job
+-----------------------------------------------------
+1. On the Jenkins Dashboard, click on New Item
+2. Enter Item Name (JOB1)
+3. Select Freestyle project option
+4. Click on OK
+5. Enter some introductory text in the Description text area.
+6. In the Source Code Management section, select Git option.
+7. Provide your Repository URL as https://github.com/<yourusername>/jenkins-freestylepipeline.git
+8. In Branch Specifier section, specify */master
+9. In the Build Triggers section, select GitHub hook trigger for GITScm polling checkbox option.
+10. In the Build Steps section, select Execute Shell from Drop Down List.
+11. Enter python3 f1.py command in the text area of the Execute Shell.
+11. Click on Save Button
+
+Creating Second Job
+-----------------------------------------------------
+1. On the Jenkins Dashboard, click on New Item
+2. Enter Item Name (JOB2)
+3. Select Freestyle project option
+4. Click on OK
+5. Enter some introductory text in the Description text area.
+6. In the Source Code Management section, select Git option
+7. Provide your Repository URL as https://github.com/<yourusername>/jenkins-freestylepipeline.git
+8. In Branch Specifier section section, specify */master
+9. In the Build Triggers section, select Build after other projects are built.
+10. In the Projects to watch text field, enter JOB1.
+10. In the Build Steps section, select Execute Shell from Drop Down List.
+11. Enter python3 f2.py command in the text area of the Execute Shell.
+11. Click on Save Button
+
+Creating Third Job
+-----------------------------------------------------
+1. On the Jenkins Dashboard, click on New Item
+2. Enter Item Name (JOB3)
+3. Select Freestyle project option
+4. Click on OK
+5. Enter some introductory text in the Description text area.
+6. In the Source Code Management section, select Git option
+7. Provide your Repository URL as https://github.com/<yourusername>/jenkins-freestylepipeline.git
+8. In Branch Specifier section section, specify */master
+9. In the Build Triggers section, select Build after other projects are built.
+10. In the Projects to watch text field, enter JOB2.
+10. In the Build Steps section, select Execute Shell from Drop Down List.
+11. Enter python3 f2.py command in the text area of the Execute Shell.
+11. Click on Save Button
+
+
+Trigger CI/CD Pipeline
+-----------------------------------------------------
+1. Create any new file in the master branch of your forked repository.
+2. This will trigger JOB1 in Jenkins using the added Webhook.
+3. After completion of JOB1, JOB2 will be triggered.
+4. After completion of JOB2, JOB3 will be triggered.
+5. This way complete CI/CD pipeline will be executed.
+6. Replace JOB1, JOB2, JOB3 with Build, Test and Deploy steps of Project Development to develop a more meaningful version of the CI/CD pipeline.
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Creating CI/CD Pipeline using Pipeline Approach
+======================================================================================
+
+
+Fork Jenkins Repository
+------------------------------------------------------
+1. In the GitHub, fork the following repository https://github.com/mimrancomsats/jenkins-pipeline.git
+
+
+Integrating Jenkins with Github using Webhook Approach
+------------------------------------------------------
+1. Go the Settings section of your forked repository.
+2. Click on Webhooks option in the left panel.
+3. Click on Add Webhook button in top right corner.
+4. In the Payload URL section, enter following URL http://<your_server_public_IPAddress:8080>/github-webhook/ 
+5. In the Content Type drop down list, select application/json option
+6. Click on Add Webhook button.
+
+Creating CI/CD Pipeline using Pipeline Approach
+-----------------------------------------------------
+1. On the Jenkins Dashboard, click on New Item
+2. Enter Item Name (Pipeline)
+3. Select Pipeline option
+4. Click on OK
+5. Enter some introductory text in the Description text area.
+6. In the Build Triggers section, select GitHub hook trigger for GITScm polling checkbox option
+7. In the Pipeline section, select Pipeline script from SCM in Definition drop down list.
+8. From the SCM drop down list select Git.
+9. Provide your Repository URL as https://github.com/<yourusername>/jenkins-pipeline.git
+10. In Branch Specifier section section, specify */master
+11. In the Script Path text field, enter text Jenkinsfile
+12. Click on Save Button
+
+Trigger CI/CD Pipeline
+-----------------------------------------------------
+1. Create any new file in the master branch of the repository.
+2. This will trigger Build, Test and Deploy stages defined in the JenkinsFile.
+3. Link repository of your own project and define Build, Test and Deploy steps based on your project.
+
