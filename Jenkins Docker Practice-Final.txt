@@ -1,0 +1,85 @@
+
+
+Install Docker on your EC2 machine.
+-----------------------------------------------------
+1. In the ubuntu EC2 machine type following command to install Docker.
+2. sudo apt install docker.io
+3. Run following command to confirm if the Docker is intalled sccessfully.
+4. docker -version
+5. Run the following command to modify access rights to Docker 
+6. sudo chmod 777 /var/run/docker.sock
+
+Accessing Jenkins
+-----------------------------------------------------
+Get the public IP address of the EC2 machine and access the Jenkins using the following URL
+1. http://<your_server_public_DNS>:8080 
+2. Enter username and password which you have set while installing Jenkins.
+3. Jenkins Dashboard will be available.
+
+Install Docker Pipeline Plugin
+-----------------------------------------------------
+1. In the Jenkins Dashbard, click on Manage Jenkins option in left panel
+2. Click on Plugins option in System Configuration section.
+3. Click on Available Plugins option in left panel.
+4. In the serach bar, type Docker Pipeline.
+5. Click on the checkbox adjacent to Docker Pipeline.
+6. Click on Install button in top right.
+7. Plugin will be installed.
+
+Fork Jenkins Repository
+-----------------------------------------------------
+1. In the GitHub, fork the following repository https://github.com/mimrancomsats/django-todo-cicd.git
+
+
+Integrating Jenkins with Github using Webhook Approach
+------------------------------------------------------
+1. Go the Settings section of your forked repository.
+2. Click on Webhooks option in the left panel.
+3. Click on Add Webhook button in top right corner.
+4. In the Payload URL section, enter following URL http://<your_server_public_IPAddress>:8080/github-webhook/ 
+5. In the Content Type drop down list, select application/json option
+6. Click on Add Webhook button.
+
+
+Running Docker inside Jenkins
+-----------------------------------------------------
+1. On the Jenkins Dashboard, click on New Item
+2. Enter Item Name (Pipeline)
+3. Select Pipeline option
+4. Click on OK
+5. Enter some introductory text in the Description text area.
+6. In the Build Triggers section, select GitHub hook trigger for GITScm polling checkbox option
+7. In the Pipeline section, select Pipeline script from SCM in Definition drop down list.
+8. From the SCM drop down list select Git.
+9. Provide your Repository URL as https://github.com/<yourusername>/django-todo-cicd.git
+10. In Branch Specifier section, specify */develop
+11. In the Script Path text field, enter text Jenkinsfile
+12. Click on Save Button
+
+Trigger CI/CD Pipeline
+-----------------------------------------------------
+1. Create any new file in the master branch of the repository.
+2. This will trigger Build, Test and Deploy stages defined in the JenkinsFile.
+3. Link repository of your own project and define Build, Test and Deploy steps based on your project.
+
+
+Using Docker as a Build Agent
+-----------------------------------------------------
+1. On the Jenkins Dashboard, click on New Item
+2. Enter Item Name (Pipeline1)
+3. Select Pipeline option
+4. Click on OK
+5. Enter some introductory text in the Description text area.
+6. In the Build Triggers section, select GitHub hook trigger for GITScm polling checkbox option
+7. In the Pipeline section, select Pipeline script from SCM in Definition drop down list.
+8. From the SCM drop down list select Git.
+9. Provide your Repository URL as https://github.com/<yourusername>/django-todo-cicd.git
+10. In Branch Specifier section section, specify */develop
+11. In the Script Path text field, enter text Jenkinsfile2
+12. Click on Save Button
+
+Trigger CI/CD Pipeline
+-----------------------------------------------------
+1. Create any new file in the master branch of the repository.
+2. This will trigger Build, Test and Deploy stages defined in the JenkinsFile.
+3. Link repository of your own project and define Build, Test and Deploy steps based on your project.
