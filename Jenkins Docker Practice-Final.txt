@@ -75,7 +75,7 @@ Using Docker as a Build Agent
 8. From the SCM drop down list select Git.
 9. Provide your Repository URL as https://github.com/<yourusername>/django-todo-cicd.git
 10. In Branch Specifier section section, specify */develop
-11. In the Script Path text field, enter text Jenkinsfile2
+11. In the Script Path text field, enter text Jenkinsfile11
 12. Click on Save Button
 
 Trigger CI/CD Pipeline
