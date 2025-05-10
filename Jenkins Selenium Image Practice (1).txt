@@ -1,0 +1,152 @@
+
+Run Selenium Test Environment Docker Image in your Ubuntu Machine
+-----------------------------------------------------
+1. First, we will create an image of the Selenium tests on the ubuntu machine to check if we can successfully run Selenium testcase using Docker Image.
+2. Create a python file with the name firsttest.py using following command
+   nano firsttest.py
+3. In the firsttest.py file paste following Selenium test script and save the file.
+4.
+# vim firsttest.py
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+
+options = Options()
+options.add_argument('--no-sandbox')
+options.add_argument('--headless')
+options.add_argument('--disable-dev-shm-usage')
+
+service = Service('/usr/bin/chromedriver')  # Explicit path to chromedriver
+driver = webdriver.Chrome(service=service, options=options)
+
+#driver = webdriver.Chrome(options=options)
+
+driver.get("https://www.selenium.dev/selenium/web/web-form.html")
+
+title = driver.title
+assert title == "Web form"
+
+driver.implicitly_wait(0.5)
+
+text_box = driver.find_element(by=By.NAME, value="my-text")
+submit_button = driver.find_element(by=By.CSS_SELECTOR, value="button")
+
+text_box.send_keys("Selenium")
+submit_button.click()
+
+message = driver.find_element(by=By.ID, value="message")
+value = message.text
+print(value)
+
+assert value == "Received!"
+driver.quit()
+
+5. Next create a Dockerfile at the same path where firsttest.py is located and add following content in the Dockerfile
+6.
+# Use official Python base image
+FROM python:3.8-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies and Chrome dependencies
+RUN apt update && apt install -y \
+    wget \
+    unzip \
+    && wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
+    && apt-get install ./google-chrome-stable_current_amd64.deb -y \
+    && wget https://storage.googleapis.com/chrome-for-testing-public/131.0.6778.85/linux64/chromedriver-linux64.zip \
+    && unzip chromedriver-linux64.zip \
+    && mv chromedriver-linux64/chromedriver /usr/bin/chromedriver \
+    && chown root:root /usr/bin/chromedriver \
+    && chmod +x /usr/bin/chromedriver \
+    && apt install python3-pip -y \
+    && pip install selenium --break-system-packages \
+    && pip install webdriver-manager --break-system-packages \
+    && rm chromedriver-linux64.zip google-chrome-stable_current_amd64.deb
+
+# Copy application code
+COPY firsttest.py .
+
+# Run the application
+CMD ["python", "firsttest.py"]
+
+7. On the Ubuntu command line, run the following command to create an image of the Selenium Test Environment
+   docker build -t selenium-test .
+8. Run the following command on command line, run the following command to execute Selenium Test cases.
+   docker run selenium-test
+9. If the Image runs successfully, then it will display the string "Received!" on the command line.
+10. If the script does not run successfully, then resolve the installation issues before proceeding to the next step.
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Running Selenium TestCases In Jenkins
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Integrating Jenkins with Github using Webhook Approach
+------------------------------------------------------
+1. Go the Settings section of your forked repository, https://github.com/<yourusername>/selenium-webdriver.git.
+2. Click on Webhooks option in the left panel.
+3. Click on Add Webhook button in top right corner.
+4. In the Payload URL section, enter following URL http://<your_server_public_IPAddress>:8080/github-webhook/ 
+5. In the Content Type drop down list, select application/json option
+6. Click on Add Webhook button.
+
+
+Running Selenium Test cases inside Jenkins
+-----------------------------------------------------
+1. Go to the already forked selenium-webdriver repository and create a python file with the name firsttest.py.
+2. Copy/Paste the testcase firsttest.py content created above in the file created in the selenium-webdriver repository.
+3. Next create a Dockerfile in the repository and paste the Dockerfile content created above in the file.
+3. Next create a file named 'Jenkinsfile7' and paste the following pipeline script in the Jenkinsfile7.
+
+pipeline {
+    agent any
+    environment {
+        IMAGE_NAME = "selenium-test"
+    }
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build the Docker image
+                    sh 'docker build -t $IMAGE_NAME .'
+                }
+            }
+        }
+        stage('Run Selenium Tests') {
+            steps {
+                script {
+                    // Run the Docker container and execute the tests
+                    sh 'docker run --rm $IMAGE_NAME'
+                }
+            }
+        }
+    }
+    post {
+        always {
+            // Cleanup: remove any unused images, volumes, etc.
+            sh 'docker system prune -af'
+        }
+    }
+}
+
+4. On the Jenkins Dashboard, click on New Item
+5. Enter Item Name (SeleniumImagePipeline)
+6. Select Pipeline option
+7. Click on OK
+8. Enter some introductory text in the Description text area.
+9. In the Build Triggers section, select GitHub hook trigger for GITScm polling checkbox option
+10. In the Pipeline section, select Pipeline script from SCM in Definition drop down list.
+11. From the SCM drop down list select Git.
+12. Provide your Repository URL as https://github.com/<yourusername>/selenium-webdriver.git
+13. In Branch Specifier section, specify */master
+14. In the Script Path text field, enter text Jenkinsfile7
+15. Click on Save Button
+
+Trigger CI/CD Pipeline
+-----------------------------------------------------
+1. Create any new file in the master branch of the repository.
+2. This will trigger Build Image and Run Selenium Test stages defined in the JenkinsFile7.
+3. If the testcases run successfully, it will display the string "Received!" on the console output of the Pipeline.
+
+

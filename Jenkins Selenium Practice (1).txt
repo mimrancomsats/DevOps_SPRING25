@@ -1,0 +1,92 @@
+
+Install Headless Google Chrome Browser on your EC2 machine.
+-----------------------------------------------------
+1. sudo apt update
+2. wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+3. sudo dpkg -i google-chrome-stable_current_amd64.deb
+4. If the command in Step 3 does not work then use the command given in Step 5.
+5. sudo apt install ./google-chrome-stable_current_amd64.deb
+6. google-chrome –version
+7. After running the above command, you may get the following output. Copy Chrome version with yourself for later use.
+   Google Chrome 131.0.6778.85
+
+Install Google Chrome Driver for handling Programmatic requests from Selenium WebDriver
+-----------------------------------------------------
+1. wget https://storage.googleapis.com/chrome-for-testing-public/131.0.6778.85/linux64/chromedriver-linux64.zip
+2. sudo apt install unzip
+3. unzip chromedriver-linux64.zip
+4. sudo mv chromedriver-linux64 /usr/bin/chromedriver
+5. sudo chown root:root /usr/bin/chromedriver
+6. sudo chmod +x /usr/bin/chromedriver
+
+In case if the above mentioned steps are not working then 
+1. Go to https://googlechromelabs.github.io/chrome-for-testing/#stable.
+2. The Stable Channel column will display the latest Google Chrome version. Click on the hyperlink,
+3. It will take you to the relevant section within the WebPage.
+4. Carefully select chromedrvier for your platform (Ein64, Linux64 etc.), copy the complete URL and replace it with the URL in step 2 of this section after the wget command.
+
+
+Install pip - package manager for Python packages
+-----------------------------------------------------
+1. sudo apt install python3-pip
+2. pip --version
+
+
+Install Selenium and Selenium WebDriver for programmatic access to the Browser
+-----------------------------------------------------
+sudo pip install selenium --break-system-packages
+sudo pip install webdriver-manager --break-system-packages
+
+
+Fork Jenkins Repository
+-----------------------------------------------------
+1. In the GitHub, fork the following repository https://github.com/mimrancomsats/selenium-webdriver.git
+
+
+Run Selenium Tests in your Ubuntu Machine
+-----------------------------------------------------
+1. First, we will run Selenium tests on the ubuntu machine to check if Selenium is working correctly.
+2. Create a python file with the name firsttest.py using following command
+   nano firsttest.py
+3. Go the forked repostiory and copy the selenium test case from the TestScriptMay112024.py
+4. Paste it in firsttest.py file and save it.
+5. On the command line run the following command
+   python3 firsttest.py
+6. If the script runs successfully, then it will display the string "Received!" on the command line.
+7. If the script does not run successfully, then resolve the installation issues before proceeding to the next step.
+
+
+Running Selenium Test In Jenkins
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Integrating Jenkins with Github using Webhook Approach
+------------------------------------------------------
+1. Go the Settings section of your forked repository.
+2. Click on Webhooks option in the left panel.
+3. Click on Add Webhook button in top right corner.
+4. In the Payload URL section, enter following URL http://<your_server_public_IPAddress>:8080/github-webhook/ 
+5. In the Content Type drop down list, select application/json option
+6. Click on Add Webhook button.
+
+
+Running Selenium Test cases inside Jenkins
+-----------------------------------------------------
+1. On the Jenkins Dashboard, click on New Item
+2. Enter Item Name (Selenium)
+3. Select Pipeline option
+4. Click on OK
+5. Enter some introductory text in the Description text area.
+6. In the Build Triggers section, select GitHub hook trigger for GITScm polling checkbox option
+7. In the Pipeline section, select Pipeline script from SCM in Definition drop down list.
+8. From the SCM drop down list select Git.
+9. Provide your Repository URL as https://github.com/<yourusername>/selenium-webdriver.git
+10. In Branch Specifier section, specify */master
+11. In the Script Path text field, enter text Jenkinsfile4
+12. Click on Save Button
+
+Trigger CI/CD Pipeline
+-----------------------------------------------------
+1. Create any new file in the master branch of the repository.
+2. This will trigger Build, Test and Deploy stages defined in the JenkinsFile4.
+3. Link repository of your own project and define Build, Test and Deploy steps based on your project.
+
+
