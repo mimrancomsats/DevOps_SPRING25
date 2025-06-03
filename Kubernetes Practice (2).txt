@@ -1,0 +1,199 @@
+Some Pre-requisites
+-----------------------------------------------------
+This Lab will be performed on the Ubuntu virtual machine setup using Oracle VM VirtualBox hypervisor.
+Make sure that the Oracle VM VirtualBox is installed and Ubuntu OS is setup as a virtual machine.
+  
+
+Install Docker on your EC2 machine.
+-----------------------------------------------------
+1. Open the Ubuntu VM terminal and type the following set of commands. 
+2. sudo apt update
+2. sudo apt install docker.io
+3. Run following command to confirm if the Docker is intalled successfully.
+4. docker --version
+
+Install Kubectl
+-----------------------------------------------------
+1. sudo snap install kubectl --classic
+2. kubectl version 
+
+Install minikube
+-----------------------------------------------------
+1. curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+2. sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+Deploying Nginx server on the Kubernetes using commands
+-----------------------------------------------------
+1. Start minikube cluster with a single Master and a single client node.
+2. minikube start
+3. Create a sample deployment for nginx server and expose it on port 80 using the commands specified in steps 4 and 5.
+4. kubectl create deployment nginx --image=nginx:latest
+5. kubectl expose deployment nginx --type=NodePort --port=80
+6. Run following command to see the details of the deployment and service respectively.
+8. kubectl get deployment nginx
+9. kubectl get service nginx
+10. Run following command to get URL for the deployed nginx server.
+11. minikube service nginx --url
+12. Open the URL to view the deployed application.
+
+
+Deploying Nginx server on the Kubernetes cluster using deployment and service YAML files
+-----------------------------------------------------
+1. Run nano nginx-dep.yml command to create a deployment yaml file.
+2. Paste following yaml in the deployment file.
+3. 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-dep
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: nginx-kube
+  template:
+    metadata:
+      labels:
+        app: nginx-kube
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+4. Run nano nginx-svc.yml command to create a service yaml file.
+5. Paste following yaml in the service file.
+6.
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-svc
+  labels:
+    app: nginx
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+  selector:
+    app: nginx-kube
+7. Run the following command to create deployment and service within the kubernetes cluster.
+8. kubectl apply -f nginx-dep.yml
+9. kubectl apply -f nginx-svc.yml
+10. Run following command to see the details of the deployment and service respectively.
+11. kubectl get deployment nginx-dep
+12. kubectl get service nginx-svc
+13. Access the service using the URL supplied by the following command.
+14. minikube service nginx-svc --url
+15. Default landing page of nginx server will be available on the URL.
+
+
+Getting List of Pods.
+-----------------------------------------------------
+1. If you want to get the list of all pods running in your machine, run the following command
+2. kubectl get pods
+3. If you want to get the list of pods for a specific deployment, specify selector label in the above command
+4. kubectl get pods -l app=nginx-kube
+
+Testing self-healing within the kubernetes environment.
+-----------------------------------------------------
+1. Get the list of pods for a nginx-kube deployment using the following command
+2. kubectl get pods -l app=nginx-kube
+3. You will find four pods for the nginx deployment are in the running state.
+5. Copy the <podname> of any one pod and run the following command.
+6. kubectl delete pod <podname>
+7. Run the following command to see the number of pods running in the deployment.
+8. kubectl get deployment nginx-dep
+9. You will still find the four pods running in the deployment although we have deleted one of them in the last step. This is the concept of self-healing in the Kubernetes which maintains the number of pods running at any time, equal to the number of replicas you have mentioned in the deployment file.
+
+
+Deploying Wordpress application on the Kubernetes cluster using deployment and service YAML files
+-----------------------------------------------------
+1. Create Wordpress front-end deployment and service file using nano editor using the following command
+2. nano wordpress.yml
+3. Paste following yaml into it
+4. 
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-frontend
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: wordpress-frontend
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress-frontend
+spec:
+  selector:
+    matchLabels:
+      app: wordpress-frontend
+  template:
+    metadata:
+      labels:
+        app: wordpress-frontend
+    spec:
+      containers:
+      - image: wordpress:6.2.1-apache
+        name: wordpress
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: wordpress-mysql
+        - name: WORDPRESS_DB_PASSWORD
+          value: password
+        - name: WORDPRESS_DB_USER
+          value: wordpress
+        ports:
+        - containerPort: 80
+
+1. Create Wordpress backend-end deployment and service file using nano editor using the following command
+2. nano mysql.yml
+3. Paste following yaml into it
+4.
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-mysql
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: wordpress-mysql
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress-mysql
+spec:
+  selector:
+    matchLabels:
+      app: wordpress-mysql
+  template:
+    metadata:
+      labels:
+        app: wordpress-mysqql
+    spec:
+      containers:
+      - image: mysql:8.0
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: password
+        - name: MYSQL_DATABASE
+          value: wordpress
+        - name: MYSQL_USER
+          value: wordpress
+        - name: MYSQL_PASSWORD
+          value: password
+        ports:
+        - containerPort: 3306
+
+5. Run both the files using following two commands
+6. kubectl apply -f wordpress.yml
+7. kubectl apply -f mysql.yml
+8. Get the URL to access the wordpress service using the following command.
+9. minikube service wordpress --url
+10. Copy the returned URL in the browser. You will find wordpress setup in the Kubernetes cluster.
