@@ -1,0 +1,300 @@
+
+Deploying django-todo-cicd application in Kubernetes
+-----------------------------------------------------
+1. For deploying django-todo-cicd application over create a deployment file using the following command:
+2. nano deployment.yml
+3. Paste following yaml into it.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-deployment
+  labels:
+    app: todo-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: todo-app
+  template:
+    metadata:
+      labels:
+        app: todo-app
+    spec:
+      containers:
+      - name: todo-app
+        image: trainwithshubham/django-todo:latest
+        ports:
+        - containerPort: 8000
+
+4. Create a service file using following command
+5. nano service.yml
+6. Past the following yaml into it.
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-service
+spec:
+  type: NodePort
+  selector:
+    app: todo-app
+  ports:
+      # By default and for convenience, the `targetPort` is set to the same value as the `port` field.
+    - port: 80
+      targetPort: 8000
+      # Optional field
+      # By default and for convenience, the Kubernetes control plane will allocate a port from a range (default: 30000-32767)
+      nodePort: 30007
+
+7. Run the command the following to get URL for the application.
+8. minikube service todo-service --url
+9. Copy the returned URL to the Browser and access the deployed application.
+
+Deploying Wordpress application without Volumes
+-----------------------------------------------------
+1. Create Wordpress front-end deployment and service file using nano editor using the following command
+2. nano wordpress.yml
+3. Paste following yaml into it
+4. 
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-frontend
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: wordpress-frontend
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress-frontend
+spec:
+  selector:
+    matchLabels:
+      app: wordpress-frontend
+  template:
+    metadata:
+      labels:
+        app: wordpress-frontend
+    spec:
+      containers:
+      - image: wordpress:6.2.1-apache
+        name: wordpress
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: wordpress-mysql
+        - name: WORDPRESS_DB_PASSWORD
+          value: password
+        - name: WORDPRESS_DB_USER
+          value: wordpress
+        ports:
+        - containerPort: 80
+
+5. Create Wordpress backend-end deployment and service file using nano editor using the following command
+6. nano mysql.yml
+7. Paste following yaml into it
+8.
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-mysql
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: wordpress-mysql
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress-mysql
+spec:
+  selector:
+    matchLabels:
+      app: wordpress-mysql
+  template:
+    metadata:
+      labels:
+        app: wordpress-mysql
+    spec:
+      containers:
+      - image: mysql:8.0
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: password
+        - name: MYSQL_DATABASE
+          value: wordpress
+        - name: MYSQL_USER
+          value: wordpress
+        - name: MYSQL_PASSWORD
+          value: password
+        ports:
+        - containerPort: 3306
+
+9. Run both the files using following two commands
+10. kubectl apply -f wordpress.yml
+11. kubectl apply -f mysql.yml
+12. Get the URL to access the wordpress service using the following command.
+13. minikube service wordpress --url
+14. Copy the returned URL in the browser. You will find wordpress setup in the Kubernetes cluster.
+15. Install the Wordpress and create a sample Web page inside it.
+16. Run the following command to delete the services and deployments for Wordpress.
+17. kubectl delete services wordpress-mysql wordpress-frontend
+18. kubectl delete deployments wordpress-mysql wordpress-frontend 
+19. The step 17 and 18 will delete the Wordpress services and deployments
+20. Now, run the deployment and service files again using following two commands
+21. kubectl apply -f wordpress.yml
+22. kubectl apply -f mysql.yml
+23. Get the URL to access the wordpress service using the following command.
+24. minikube service wordpress --url
+25. Copy the returned URL in the browser. You will find wordpress setup in the Kubernetes cluster.
+26. The setup will ask you to install the Wordpress because there was no persistent volume attached with the deployment.
+
+
+Deploying Wordpress application with Volumes
+-----------------------------------------------------
+1. Create Wordpress front-end deployment and service file using nano editor using the following command
+2. nano wordpress-volfrontend.yml
+3. Paste following yaml into it
+4. 
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-volfrontend
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: wordpress-volfrontend
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wp-pv-claim
+  labels:
+    app: wordpress
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 3Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress-volfrontend
+spec:
+  selector:
+    matchLabels:
+      app: wordpress-volfrontend
+  template:
+    metadata:
+      labels:
+        app: wordpress-volfrontend
+    spec:
+      containers:
+      - image: wordpress:6.2.1-apache
+        name: wordpress
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: wordpress-mysql
+        - name: WORDPRESS_DB_PASSWORD
+          value: password
+        - name: WORDPRESS_DB_USER
+          value: wordpress
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: wordpress-persistent-storage
+          mountPath: /var/www/html
+      volumes:
+      - name: wordpress-persistent-storage
+        persistentVolumeClaim:
+          claimName: wp-pv-claim
+
+5. Create Wordpress backend-end deployment and service file using nano editor using the following command
+6. nano mysql-vol.yml
+7. Paste following yaml into it
+8.
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-volmysql
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: wordpress-volmysql
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+  labels:
+    app: wordpress
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress-volmysql
+spec:
+  selector:
+    matchLabels:
+      app: wordpress-volmysql
+  template:
+    metadata:
+      labels:
+        app: wordpress-volmysql
+    spec:
+      containers:
+      - image: mysql:8.0
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: password
+        - name: MYSQL_DATABASE
+          value: wordpress
+        - name: MYSQL_USER
+          value: wordpress
+        - name: MYSQL_PASSWORD
+          value: password
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim
+
+9. Run both the files using following two commands
+10. kubectl apply -f wordpress-volfrontend.yml
+11. kubectl apply -f mysql-vol.yml
+12. Get the URL to access the wordpress service using the following command.
+13. minikube service wordpress --url
+14. Copy the returned URL in the browser. You will find wordpress setup in the Kubernetes cluster.
+15. Install the Wordpress and create a sample Web page inside it.
+16. Run the following command to delete the services and deployments for Wordpress.
+17. kubectl delete services wordpress-volmysql wordpress-volfrontend
+18. kubectl delete deployments wordpress-volmysql wordpress-volfrontend
+19. The step 17 and 18 will delete the Wordpress services and deployments
+20. Now, run the deployment and service files again using following two commands
+21. kubectl apply -f wordpress-volfrontend.yml
+22. kubectl apply -f mysql-vol.yml
+23. Get the URL to access the wordpress service using the following command.
+24. minikube service wordpress --url
+25. Copy the returned URL in the browser. You will find that the work you have done before deleting the deployments is still available to you.
+26. The is because data related to your last activity is stored by the persistant volume claim created during the deployment phase.
