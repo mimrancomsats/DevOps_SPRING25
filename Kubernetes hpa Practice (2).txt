@@ -1,0 +1,152 @@
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Horizontal Pod AutoScaling
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Creating nginx deployment with horizontal pod autoscaling Feature
+-----------------------------------------------------
+1. Enable the metrics-server in minkube cluster using the following command.
+2. minikube addons enable metrics-server
+
+3. First create a deployment yaml file with nano nginx-deployment.yml command.
+4. Paste following manifest inside the yaml file.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        resources:
+          limits:
+            cpu: "500m"
+          requests:
+            cpu: "200m"
+
+5. Create a horizontal pod autoscaling (HPA) yaml file with nano nginx-hpa.yml command
+6. Paste following yml script inside it.
+7.
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nginx-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nginx-deployment
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 10
+
+8. Create a service yaml file with nano nginx-service.yml
+9.
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+    - port: 80
+      targetPort: 80
+10. Run the three yaml files using following three commands for creating deployment, hpa and services.
+11. kubectl apply -f nginx-deployment.yml
+12. kubectl apply -f nginx-hpa.yml
+13. kubectl apply -f nginx-service.yml
+14. View the created deployment, service and hpa using following commands.
+15. kubectl get deployments
+16. kubectl get services
+17. kubectl get hpa
+
+Testing above nginx deployment with Load Generator
+-----------------------------------------------------
+1. Open 2nd terminal and run following command.
+2. kubectl run -i load-generator --rm --image=busybox --restart=Never -- /bin/busybox sh -c "while true; do wget -O- http://nginx-service:80/; done"
+3. The above command creates a pod load-generator using busybox image and runs a shell command with a loop that continuously sends HTTP requests to the service http://nginx-service/ created above.
+4. In the 1st terminal, run the following to view the number of pods running.
+5. kubectl get hpa nginx-hpa --watch
+6. You should see that with increase in load, the number of pods will increase.
+7. Use Ctrl+C to stop the pod in 2nd terminal and delete it with the following command.
+8. kubectl delete pod load-generator
+9. Run kubectl get pods command to verify that the pods is deleted.
+9. In the 1st terminal, after a while, the number of pods will reduce back to 1 with a decrease in load.
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Rollout and Rollback
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Testing Rollout Feature in Kubernetes
+-----------------------------------------------------
+1. First, create a file using nano rollout.yml with nginx image and paste service and deployment yaml inside it.
+2.
+apiVersion: v1
+kind: Service
+metadata:
+  name: rollout
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+  selector:
+    app: rollout
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rollout
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: rollout
+  template:
+    metadata:
+      labels:
+        app: rollout
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+3. Deploy deployment and service files  using following command
+4. kubectl apply -f rollout.yml
+5. Run the following commands to check that all pods are running.
+6. kubectl get deployments
+7. Run the following command to view the rollout history
+8. kubectl rollout history deployment rollout
+9. Run the following command to annotate the change-cause column.
+10. kubectl annotate deployment rollout kubernetes.io/change-cause="nginx:latest deployment"
+11. Again run the command provided in step 8 to view the rollout history. You should see the status annotated to the one set in step 10.
+12. Next edit the rollout.yml created in step 2 with container image of "httpd:latest" and save it.
+13. Run the following commands to update the deployment.
+14. kubectl apply -f rollout.yml
+15. Run the following command to view the rollout history
+16. kubectl rollout history deployment rollout
+17. Now, you should see that there are two versions of the deployments, first one with nginx deployment and second with httpd deployment.
+18. Run the following command to annotate the change-cause column.
+19. kubectl annotate deployment rollout kubernetes.io/change-cause="httpd:latest deployment"
+20. Run the command provided in step 16 to view the rollout history. You should see the status annotated to the one set in step 19.
+21. Run minikube service rollout command given below to get the url and verfiy httpd server is running.
+22. minikube service rollout --url
+
+Testing Rollback Feature in Kubernetes
+-----------------------------------------------------
+1. Run the following command to rollback to the nginx deployment.
+2. kubectl rollout undo deployment rollout
+3. Run the following command to view the rollout history
+4. kubectl rollout history deployment rollout
+5. It should add revision in the history with ID 3 and remove revision 1 from the history 
+6. View the url of the service again to find out that deployment has successfully rolled out to nginx deployment.
+7. In the similar way, if there are more than 6 deployments rolled out and you want to rollback to 4th revision, then use following command.
+8. kubectl rollout undo deployment --to-revision=4  
+9. Create different images of yourproject with varied features and try rollout and rollback features for your own application.
