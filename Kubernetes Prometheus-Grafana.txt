@@ -1,0 +1,58 @@
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Prometheus-Grafana
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Prerequisites
+-----------------------------------------------------
+1. Kubernetes (Minikube, K3s, or other lightweight distributions).
+2. Kubectl CLI configured to access your cluster.
+3. Helm (package manager for Kubernetes) installed.
+
+
+Helm Installation
+------------------------------------------------------
+1. Install Helm using the following command.
+2. curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+3. To check whether Helm is successfully installed or not, use following command
+4. helm version
+
+
+Deploy the Prometheus stack and Grafana.
+------------------------------------------------------
+1. Create a separate namespace using the following command
+2. kubectl create namespace monitoring
+3. Install Prometheus and Grafana in the monitoring namespace using the following command.
+4. helm install prometheus kube-prometheus-stack --repo https://prometheus-community.github.io/helm-charts --namespace monitoring
+5. Use following command to view deployments related to Prometheus and Grafana.
+6. kubectl --namespace=monitoring  get deployments 
+
+
+Access Prometheus and Grafana 
+-------------------------------------------------------
+1. Use following command to view services related to Prometheus and Grafana.
+2. kubectl --namespace=monitoring get services
+3. You can see all the services are of ClusterIP type. We cannot access them from outside the cluster. However we need to access Grafana web interface.
+4. To access Grafana from the browser, we have to use the concept of port-forwarding.
+5. kubectl --namespace monitoring port-forward svc/prometheus-grafana 3000:80 --address=0.0.0.0
+6. Access the Grafana Interface using the following URL:
+7. http://<EC2_PUBLIC_IP>:3000
+8. Grafana will display Login page. Retreive Grafana password using the following command
+9. kubectl get secret -n monitoring prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+10. Log in to Grafana with the username admin and the password retrieved in Step 9.
+
+
+Creating new Dashboard
+-------------------------------------------------------
+1. Go to Dashboard option in the left panel.
+2. Click on New button in right-most side and select New Dashboard from drop-down list.
+3. Click on Import Dashboard button.
+4. Provide Grafana Dasboard ID as 17685 in the provided text field and click on Load button.
+5. Select Prometheus in Drop Down list below in Prometheus section.
+6. Click on Import Button.
+7. Deployment statistics will be displayed for the default namespace. 
+8. You have the option of to alter the Refresh time of the dashboard by clicking on right-corner drop down list .
+
+
+Exercise
+-------------------------------------------------------
+1. Deploy Horizontal Pod Autoscaler described in the 'Kubernetes hpa Practice.txt' file and analyse the changes in the Dashboard.
